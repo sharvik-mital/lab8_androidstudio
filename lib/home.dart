@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'session.dart';
-//import 'package:json_serializable/builder.dart';
-import 'dart:convert';
 //import 'package:flutter/material.dart';
-void main() => runApp(new MyApp());
 
 //class MyApp extends StatelessWidget {
 //  @override
@@ -17,7 +14,7 @@ void main() => runApp(new MyApp());
 //  }
 //}
 
-class MyApp extends StatelessWidget {
+class home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTitle = 'Form Validation Demo';
@@ -56,27 +53,20 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
   void _submit(){
-      final form = _formKey.currentState;
-      if(form.validate()){
-        form.save();
+    final form = _formKey.currentState;
+    if(form.validate()){
+      form.save();
 
-        _performLogin();
-      }
+      _performLogin();
+    }
   }
-  void _performLogin() {
+  void _performLogin(){
     Session loginsession = new Session();
-//  print(_username);
-//  print(_password);
-    loginsession.post('http://192.168.1.105:8080/lab6/LoginServlet',
-        {'userid': _username, 'password': _password}).then((sa) {
-        Map status = jsonDecode(sa);
-          print(sa);
-//  JSONObject reader = new JSONObject(sa);
-//  Navigator.of(context).pushNamed(home.tag)
-
-    });
+    print(_username);
+    print(_password);
+    loginsession.post('http://10.196.14.94:8080/lab6/LoginServlet',{'userid':_username,'password':_password}).then((sa)=>print(sa));
   }
-   Widget _loginform1(){ // Build a Form widget using the _formKey we created above
+  Widget _loginform1(){ // Build a Form widget using the _formKey we created above
     return Form(
       key: _formKey,
       child: Column(
@@ -120,9 +110,9 @@ class RandomWordsState extends State<RandomWords> {
   @override
   Widget build(BuildContext context){
     return new Scaffold(
-    appBar : new AppBar(
-      title: new Text('Startup Name Generator'),
-    ),
+      appBar : new AppBar(
+        title: new Text('Startup Name Generator'),
+      ),
       body: _buildSuggestions(),
     );
   }
