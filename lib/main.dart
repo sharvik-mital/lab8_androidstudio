@@ -3,6 +3,7 @@ import 'package:english_words/english_words.dart';
 import 'session.dart';
 //import 'package:json_serializable/builder.dart';
 import 'dart:convert';
+import 'dart:async';
 //import 'package:flutter/material.dart';
 void main() => runApp(new MyApp());
 
@@ -16,7 +17,7 @@ void main() => runApp(new MyApp());
 //    );
 //  }
 //}
-
+String _username,_password;
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,7 @@ class MyCustomFormState extends State<MyCustomForm> {
   //
   // Note: This is a GlobalKey<FormState>, not a GlobalKey<MyCustomFormState>!
   final _formKey = GlobalKey<FormState>();
-  String _username,_password;
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -67,10 +68,19 @@ class MyCustomFormState extends State<MyCustomForm> {
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.1.105:8080/lab6/LoginServlet',
-        {'userid': _username, 'password': _password}).then((sa) {
+    loginsession.post('http://192.168.1.105:8080/lab6/LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
         Map status = jsonDecode(sa);
-          print(sa);
+
+          if(status['status'].toString()=='true'){
+            Navigator.push(context,
+            MaterialPageRoute(builder: (context) => Chats()));
+          }
+//          else{
+//            Scaffold.of(context)
+//                .showSnackBar(SnackBar(content: Text('Invalid Credentails')));
+//          }
+//            StatefulWidget
+
 //  JSONObject reader = new JSONObject(sa);
 //  Navigator.of(context).pushNamed(home.tag)
 
@@ -113,6 +123,131 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
 }
+
+class Chats extends StatefulWidget {
+  @override
+  _Chats createState() {
+    return _Chats();
+  }
+}
+class _Chats extends State<Chats>{
+  var _result;
+  final List<WordPair> _suggestions = <WordPair>[];
+  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
+
+  void initState(){
+    super.initState();
+    Session loginsession = new Session();
+    loginsession.post('http://192.168.1.105:8080/lab6/AllConversations',
+        {'userid': _username}).then((sa) {
+      Map status = jsonDecode(sa);
+      print(sa);
+      for (int i = 0; i < status['data'].length; i++) {
+        if(status['data'][i]['last_timestamp']==null){
+          _suggestions.add(new WordPair(
+              status['data'][i]['uid'], "1"));
+        }
+        else{
+          _suggestions.add(new WordPair(
+              status['data'][i]['uid'], status['data'][i]['last_timestamp']));
+        }
+
+      }
+      setState(() {
+        _result=1;
+      });
+
+    });
+  }
+  @override
+  Widget build(BuildContext context) {
+    if(_result==null){
+      return new Scaffold(
+        appBar: new AppBar(
+          title: new Text('Chats'),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                Chats();
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.exit_to_app),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+        body: new Center(
+          child: new Text('Loading..'),
+        ),
+      );
+    }
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text('Chats'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
+              Chats();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+      body: _showchats()
+    );
+  }
+
+  Widget _buildRow(WordPair pair) {
+    return new ListTile(
+      title: new Text(
+        pair.asPascalCase,
+        style: _biggerFont,
+      ),
+    );
+  }
+
+
+  Widget _showchats(){
+    return new ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        // The itemBuilder callback is called once per suggested
+        // word pairing, and places each suggestion into a ListTile
+        // row. For even rows, the function adds a ListTile row for
+        // the word pairing. For odd rows, the function adds a
+        // Divider widget to visually separate the entries. Note that
+        // the divider may be difficult to see on smaller devices.
+        itemBuilder: (BuildContext _context, int i) {
+          // Add a one-pixel-high divider widget before each row
+          // in the ListView.
+          if (i.isOdd) {
+            return new Divider();
+          }
+
+          // The syntax "i ~/ 2" divides i by 2 and returns an
+          // integer result.
+          // For example: 1, 2, 3, 4, 5 becomes 0, 1, 1, 2, 2.
+          // This calculates the actual number of word pairings
+          // in the ListView,minus the divider widgets.
+          final int index = i ~/ 2;
+          // If you've reached the end of the available word
+          // pairings...
+          print(_suggestions.length);
+          return _buildRow(_suggestions[index]);
+        },
+        itemCount: 2*_suggestions.length,
+    );
+  }
+  }
 
 class RandomWordsState extends State<RandomWords> {
   final List<WordPair> _suggestions=<WordPair>[];
