@@ -466,8 +466,8 @@ class _Conversation extends State<Conversation>{
     return Form(
       key: _formKey1,
 //    String _text,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+
         children: <Widget>[
 //          TextFormField(
 //            decoration: const InputDecoration(labelText: 'Username'),
@@ -478,8 +478,9 @@ class _Conversation extends State<Conversation>{
 //            },
 //            onSaved: (value){_username=value;},
 //          ),
-          TextFormField(
-            decoration: const InputDecoration(labelText: 'new messsage'),
+          new Flexible(
+          child: TextFormField(
+            decoration: const InputDecoration(hintText: 'new messsage'),
 //            obscureText: true,
             validator: (value) {
               if (value.isEmpty) {
@@ -488,11 +489,12 @@ class _Conversation extends State<Conversation>{
             },
             onSaved:(value) { _text1=value;},
           ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6.0),
             child: RaisedButton(
               onPressed: _sendnewmessage,
-              child: Text('Submit'),
+              child: Text('Send'),
             ),
           ),
         ],
