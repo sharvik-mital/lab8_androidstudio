@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'session.dart';
+import 'dart:io';
 //import 'package:json_serializable/builder.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -20,6 +21,7 @@ void main() => runApp(new MyApp());
 //  }
 //}
 String _username,_password;
+const String url='http://192.168.2.8:8080/lab8_androidstudio/';
 var loginresult;
 class MyApp extends StatelessWidget {
   @override
@@ -57,22 +59,22 @@ class MyCustomFormState extends State<MyCustomForm> {
   BuildContext scaffoldContext;
   @override
   Widget build(BuildContext context) {
-     {
+    {
       return new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Login Page'),
-        ),
-        body: new Builder(builder:(BuildContext _context){
-          scaffoldContext= _context;
-          return _loginform1();
-        } )
+          appBar: new AppBar(
+            title: new Text('Login Page'),
+          ),
+          body: new Builder(builder:(BuildContext _context){
+            scaffoldContext= _context;
+            return _loginform1();
+          } )
 
       );
     }
 //     Navigator.push(context,
 //        MaterialPageRoute(builder: (context) => Chats()));
 
-}
+  }
 //  void initState(){
 //    super.initState();
 //    print('2');
@@ -100,7 +102,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
+    loginsession.post(url+'LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
       Map status = jsonDecode(sa);
       print(sa);
       if(status['status'].toString()=='true'){
@@ -109,10 +111,10 @@ class MyCustomFormState extends State<MyCustomForm> {
 //        });
         Navigator.of(context).pushReplacementNamed('./chats');
       }
-          else{
-            Scaffold.of(scaffoldContext)
-                .showSnackBar(SnackBar(content: Text('Invalid Credentails')));
-          }
+      else{
+        Scaffold.of(scaffoldContext)
+            .showSnackBar(SnackBar(content: Text('Invalid Credentails')));
+      }
 //            StatefulWidget
 
 //  JSONObject reader = new JSONObject(sa);
@@ -170,62 +172,68 @@ class _Chats extends State<Chats>{
   final List<WordPair> _suggestions1 = <WordPair>[];
   final List<WordPair> _suggestions1uid = <WordPair>[];
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
-  final _formKey2 = GlobalKey<FormState>();
-  void initState(){
-    super.initState();
-    Session loginsession = new Session();
-    loginsession.post('http://192.168.2.7:8080/lab6/AllConversations',
-        {'userid': _username}).then((sa) {
-      Map status = jsonDecode(sa);
-      print(sa);
-      if(status['status'].toString() =='false'){
-        if(status['message'].contains('logged')){
-          Navigator.of(context).pushNamedAndRemoveUntil('./login',
-                  (Route<dynamic> route) => false);
-          return;
-        }
-      }
-      else{
-      for (int i = 0; i < status['data'].length; i++) {
-        if(status['data'][i]['last_timestamp']==null){
-          _suggestions.add(new WordPair(
-              status['data'][i]['uid'], ' '));
-          _suggestionsname.add(new WordPair(
-              status['data'][i]['name']+' ', ' '));
-          _suggestions1.add(new WordPair(
-              status['data'][i]['name']+' ', ' '));
-          _suggestions1uid.add(new WordPair(
-              status['data'][i]['uid'], ' '));
-        }
-        else{
-          _suggestions.add(new WordPair(
-              status['data'][i]['uid'], status['data'][i]['last_timestamp']));
-          _suggestionsname.add(new WordPair(
-              status['data'][i]['name']+' ', status['data'][i]['last_timestamp']));
-          _suggestions1.add(new WordPair(
-              status['data'][i]['name']+' ', status['data'][i]['last_timestamp']));
-          _suggestions1uid.add(new WordPair(
-              status['data'][i]['uid'], status['data'][i]['last_timestamp']));
-        }
+//  final _formKey2 = GlobalKey<FormState>();
 
-      }
-      setState(() {
-        if (_result == null) {
-          _result = 1;
+  void initState() {
+    super.initState();
+    new Future<String>.delayed(new Duration(seconds: 3), () => 'asdasd').then((sa) {
+      Session loginsession = new Session();
+      loginsession.post(url + 'AllConversations',
+          {'userid': _username}).then((sa) {
+        Map status = jsonDecode(sa);
+        print(sa);
+        if (status['status'].toString() == 'false') {
+          if (status['message'].contains('logged')) {
+            Navigator.of(context).pushNamedAndRemoveUntil('./login',
+                    (Route<dynamic> route) => false);
+            return;
+          }
         }
         else {
-          _result += 1;
+          for (int i = 0; i < status['data'].length; i++) {
+            if (status['data'][i]['last_timestamp'] == null) {
+              _suggestions.add(new WordPair(
+                  status['data'][i]['uid'], ' '));
+              _suggestionsname.add(new WordPair(
+                  status['data'][i]['name'] + ' ', ' '));
+              _suggestions1.add(new WordPair(
+                  status['data'][i]['name'] + ' ', ' '));
+              _suggestions1uid.add(new WordPair(
+                  status['data'][i]['uid'], ' '));
+            }
+            else {
+              _suggestions.add(new WordPair(
+                  status['data'][i]['uid'],
+                  status['data'][i]['last_timestamp']));
+              _suggestionsname.add(new WordPair(
+                  status['data'][i]['name'] + ' ',
+                  status['data'][i]['last_timestamp']));
+              _suggestions1.add(new WordPair(
+                  status['data'][i]['name'] + ' ',
+                  status['data'][i]['last_timestamp']));
+              _suggestions1uid.add(new WordPair(
+                  status['data'][i]['uid'],
+                  status['data'][i]['last_timestamp']));
+            }
+          }
+          setState(() {
+            if (_result == null) {
+
+              _result = 1;
+            }
+            else {
+              _result += 1;
+            }
+          });
         }
       });
-      }
-
     });
   }
   void logout(){
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/LogoutServlet',
+    loginsession.post(url+'LogoutServlet',
         {})
         .then((sa) {
       Navigator.of(context).pushNamedAndRemoveUntil('./login',
@@ -268,52 +276,54 @@ class _Chats extends State<Chats>{
         ),
       );
     }
-    return new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Chats'),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Chats();
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.create),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NewConversation(),
-                  ),
-                );
-              },
-            ),
+    else{
+      return new Scaffold(
+          appBar: new AppBar(
+            title: new Text('Chats'),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.home),
+                onPressed: () {
+                  Chats();
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.create),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NewConversation(),
+                    ),
+                  );
+                },
+              ),
 
-            IconButton(
-              icon: Icon(Icons.exit_to_app),
-              onPressed: () {
-                logout();
-              },
-            ),
-          ],
-        ),
-        body: new Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.max,
-            children:<Widget>[
-              new TextField(
+              IconButton(
+                icon: Icon(Icons.exit_to_app),
+                onPressed: () {
+                  logout();
+                },
+              ),
+            ],
+          ),
+          body: new Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.max,
+              children:<Widget>[
+                new TextField(
                   decoration: new InputDecoration(
                     hintText: "search here",
                   ),
-                onChanged: updateList,
-              ),
-              Expanded(
-                child: _showchats(),
-              ),
-            ]
-        )
-    );
+                  onChanged: updateList,
+                ),
+                Expanded(
+                  child: _showchats(),
+                ),
+              ]
+          )
+      );
+    }
   }
   void updateList(String query){
     _suggestions1.removeWhere((item) => item.first.length>=0);
@@ -426,15 +436,15 @@ class _Conversation extends State<Conversation>{
 //  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
 //
   Future<bool> _onWillPop() {
-       Navigator.of(context).pushNamedAndRemoveUntil('./chats',
-                    (Route<dynamic> route) => false);
-       return new Future.value(false);
+    Navigator.of(context).pushNamedAndRemoveUntil('./chats',
+            (Route<dynamic> route) => false);
+    return new Future.value(false);
   }
   void initState(){
     super.initState();
 
     Session loginsession = new Session();
-    loginsession.post('http://192.168.2.7:8080/lab6/ConversationDetail',
+    loginsession.post(url+'ConversationDetail',
         {'id': _username, 'other_id' : widget.uid}).then((sa) {
       Map status = jsonDecode(sa);
       print(sa);
@@ -493,7 +503,7 @@ class _Conversation extends State<Conversation>{
             _sendmessage(),
           ]
       );
-      }
+    }
 //      Widget _title(){
 //        if(_result==null) {
 //          return new Text(widget.uid);
@@ -525,20 +535,20 @@ class _Conversation extends State<Conversation>{
           ],
         ),
         body: _body(),
-    ),
+      ),
     );
-    }
+  }
   void logout(){
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/LogoutServlet',
+    loginsession.post(url+'LogoutServlet',
         {})
         .then((sa) {
       Navigator.of(context).pushNamedAndRemoveUntil('./login',
-            (Route<dynamic> route) => false);
-  });
-        }
+              (Route<dynamic> route) => false);
+    });
+  }
   void _sendnewmessage() {
     final form = _formKey1.currentState;
     if (form.validate()) {
@@ -553,7 +563,7 @@ class _Conversation extends State<Conversation>{
 //  print(_username);
 //  print(_password);
 
-    loginsession.post('http://192.168.2.7:8080/lab6/NewMessage',
+    loginsession.post(url+'NewMessage',
         {'id': _username, 'other_id': widget.uid, 'msg': _text1})
         .then((sa)
     {
@@ -602,16 +612,16 @@ class _Conversation extends State<Conversation>{
 //            onSaved: (value){_username=value;},
 //          ),
           new Flexible(
-          child: TextFormField(
-            decoration: const InputDecoration(hintText: 'new messsage'),
+            child: TextFormField(
+              decoration: const InputDecoration(hintText: 'new messsage'),
 //            obscureText: true,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter non empty text';
-              }
-            },
-            onSaved:(value) { _text1=value;},
-          ),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter non empty text';
+                }
+              },
+              onSaved:(value) { _text1=value;},
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6.0),
@@ -685,8 +695,8 @@ class _Conversation extends State<Conversation>{
 }
 
 class NewConversation extends StatefulWidget{
-@override
-_NewConversation createState()=> new _NewConversation();
+  @override
+  _NewConversation createState()=> new _NewConversation();
 }
 class _NewConversation extends State<NewConversation>{
   Widget build(BuildContext context){
@@ -711,7 +721,7 @@ class _NewConversation extends State<NewConversation>{
           ),
         ],
       ),
-        body: _searchbox(),
+      body: _searchbox(),
 
 
     );
@@ -758,47 +768,47 @@ class _NewConversation extends State<NewConversation>{
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/LogoutServlet',
+    loginsession.post(url+'LogoutServlet',
         {})
         .then((sa) {
       Navigator.of(context).pushNamedAndRemoveUntil('./login',
               (Route<dynamic> route) => false);
     });
   }
-    void create(String text, String usname){
+  void create(String text, String usname){
 
     Session loginsession = new Session();
 
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/CreateConversation',
+    loginsession.post(url+'CreateConversation',
         {'id': _username, 'other_id': text})
         .then((sa) {
-          print (sa);
-          Map status = jsonDecode(sa);
-          if(status['status'].toString() =='false'){
-            if(status['message'].contains('logged')){
-              Navigator.of(context).pushNamedAndRemoveUntil('./login',
-                      (Route<dynamic> route) => false);
-              return;
-            }
-          }
-          if(status['status'].toString()=='false'){
-            String message=status['message'].toString();
-            if(message.contains('duplicate key value')){
-              print('duplicate');
-            Navigator.pushReplacement(
-            context,(new MaterialPageRoute(
-       builder: (context) => Conversation(uid:text, name: usname)
-      )));
+      print (sa);
+      Map status = jsonDecode(sa);
+      if(status['status'].toString() =='false'){
+        if(status['message'].contains('logged')){
+          Navigator.of(context).pushNamedAndRemoveUntil('./login',
+                  (Route<dynamic> route) => false);
+          return;
+        }
+      }
+      if(status['status'].toString()=='false'){
+        String message=status['message'].toString();
+        if(message.contains('duplicate key value')){
+          print('duplicate');
+          Navigator.pushReplacement(
+              context,(new MaterialPageRoute(
+              builder: (context) => Conversation(uid:text, name: usname)
+          )));
 
 
         }
       }
       else{
         Navigator.pushReplacement(
-        context,(new MaterialPageRoute(
-        builder: (context) => Conversation(uid:text, name: usname)
+            context,(new MaterialPageRoute(
+            builder: (context) => Conversation(uid:text, name: usname)
         )));
       }
 
@@ -814,9 +824,9 @@ class BackendService {
     List<String> _uuuid=[
       '',
     ];
-    var a=0;
+//    var a=0;
     Session loginSession = new Session();
-    loginSession.post('http://192.168.2.7:8080/lab6/AutoCompleteUser', {'id':_username, 'term':query}).then((sa){
+    loginSession.post(url+'AutoCompleteUser', {'id':_username, 'term':query}).then((sa){
 //      print(sa);
       _names.removeWhere((item) => item.length >= 0);
       _uuuid.removeWhere((item) => item.length >= 0);
@@ -840,7 +850,7 @@ class BackendService {
           }
         }
       }
-      a=1;
+//      a=1;
     });
     await Future.delayed(Duration(seconds: 1));
 //    List<String> res=_names.toList();
