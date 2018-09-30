@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'session.dart';
+//import 'type_ahead.dart';
+//import 'search.dart';
+//import 'service_result.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+
 //import 'package:json_serializable/builder.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -66,7 +71,7 @@ class MyCustomFormState extends State<MyCustomForm> {
 //     Navigator.push(context,
 //        MaterialPageRoute(builder: (context) => Chats()));
 
-}
+  }
 //  void initState(){
 //    super.initState();
 //    print('2');
@@ -93,7 +98,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
+    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
       Map status = jsonDecode(sa);
 
       if(status['status'].toString()=='true'){
@@ -151,6 +156,109 @@ class MyCustomFormState extends State<MyCustomForm> {
   }
 }
 
+//class SampleApi<T> extends SearchApi
+//{
+//
+//  List<String> _names =  [
+//    '',
+//  ];
+//  List<String> _uuuid = [
+//    '',
+//  ];
+//
+//  @override
+//  Future<ServiceResult<Iterable<String>>> exec<T>(String input) async {
+//
+//    await new Future.delayed(new Duration(seconds: 0)); //simulate a slow response
+//    Session loginSession = new Session();
+//    loginSession.post('http://192.168.1.102:8080/lab8_androidstudio/AutoCompleteUser', {'id':_username, 'term':input}).then((sa){
+//      print(sa);
+//      _names.removeWhere((item) => item.length > 0);
+//
+//      if(sa!='[]') {
+//        print(input);
+//        sa = sa.replaceAll('},{', '} , {').replaceAll('[', '').replaceAll(
+//            ']', '').replaceAll('uid: ', '').replaceAll('name: ', '')
+//            .replaceAll('phone: ', '');
+////      print(sa);
+//        List<String> status;
+//        status = sa.split(" , ");
+//        print(status.length);
+//        if (status.length > 0) {
+//          for (int i = 0; i < status.length; i++) {
+//            print(status[i]);
+//            Map stat = json.decode(status[i]);
+////
+//            _names.add(stat['label']);
+//            _uuuid.add(stat['value']);
+//          }
+//        }
+//      }
+//    });
+//    var results = _names.where((x) => x.toLowerCase().contains(input.trim().toLowerCase())).toList();
+//    final ServiceResult<Iterable<String>> sr = new ServiceResult<Iterable<String>>();
+//    sr.model = results;
+////    sr.val = _uuuid;
+//    sr.ok = true;
+//    return new Future.value(sr);
+//    }
+//}
+
+class BackendService {
+
+  static getSuggestions(String query) async {
+    List<String> _names=[
+      '',
+    ];
+    List<String> _uuuid=[
+      '',
+    ];
+    var a=0;
+    Session loginSession = new Session();
+    loginSession.post('http://192.168.2.8:8080/lab8_androidstudio/AutoCompleteUser', {'id':_username, 'term':query}).then((sa){
+//      print(sa);
+      _names.removeWhere((item) => item.length > 0);
+
+      if(sa!='[]') {
+//        print(query);
+        sa = sa.replaceAll('},{', '} , {').replaceAll('[', '').replaceAll(
+            ']', '').replaceAll('uid: ', '').replaceAll('name: ', '')
+            .replaceAll('phone: ', '');
+//      print(sa);
+        List<String> status;
+        status = sa.split(" , ");
+//        print(status.length);
+        if (status.length > 0) {
+          for (int i = 0; i < status.length; i++) {
+//            print(status[i]);
+            Map stat = json.decode(status[i]);
+//
+            _names.add(stat['label']);
+            print(_names[i]);
+            _uuuid.add(stat['value']);
+          }
+        }
+      }
+      a=1;
+    });
+
+    await Future.delayed(Duration(seconds: 1));
+//    List<String> res=_names.toList();
+//    while(a!=1);
+//    print(a);
+//    print(_names[0]);
+//    print(_names.length);
+//    return _names.toList();
+    return List.generate(_names.length, (index) {
+      return {
+//        'name': query + index.toString(),
+//        'price': Random().nextInt(100)
+          'name': _names[index],
+          'uid' : _uuuid[index]
+      };
+    });
+  }
+}
 class Chats extends StatefulWidget {
   @override
   _Chats createState() {
@@ -160,12 +268,15 @@ class Chats extends StatefulWidget {
 class _Chats extends State<Chats>{
   var _result;
   final List<WordPair> _suggestions = <WordPair>[];
+  final List<WordPair> _suggestionsname = <WordPair>[];
+  final List<WordPair> _suggestions1 = <WordPair>[];
+  final List<WordPair> _suggestions1uid = <WordPair>[];
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
-
+  final _formKey2 = GlobalKey<FormState>();
   void initState(){
     super.initState();
     Session loginsession = new Session();
-    loginsession.post('http://192.168.2.7:8080/lab6/AllConversations',
+    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/AllConversations',
         {'userid': _username}).then((sa) {
       Map status = jsonDecode(sa);
       print(sa);
@@ -173,10 +284,25 @@ class _Chats extends State<Chats>{
         if(status['data'][i]['last_timestamp']==null){
           _suggestions.add(new WordPair(
               status['data'][i]['uid'], "1"));
+          _suggestionsname.add(new WordPair(
+              status['data'][i]['name']+' ', "1"));
+          _suggestions1.add(new WordPair(
+              status['data'][i]['name']+' ', "1"));
+          _suggestions1uid.add(new WordPair(
+              status['data'][i]['uid'], "1"));
         }
         else{
           _suggestions.add(new WordPair(
               status['data'][i]['uid'], status['data'][i]['last_timestamp']));
+          _suggestionsname.add(new WordPair(
+              status['data'][i]['name']+' ', status['data'][i]['last_timestamp']));
+
+          _suggestions1.add(new WordPair(
+              status['data'][i]['name']+' ', status['data'][i]['last_timestamp']));
+
+          _suggestions1uid.add(new WordPair(
+              status['data'][i]['uid'], status['data'][i]['last_timestamp']));
+
         }
 
       }
@@ -185,9 +311,9 @@ class _Chats extends State<Chats>{
           _result = 1;
         }
         else
-          {
-            _result+=1;
-          }
+        {
+          _result+=1;
+        }
       });
 
     });
@@ -198,6 +324,12 @@ class _Chats extends State<Chats>{
             (Route<dynamic> route) => false);
 
   }
+
+//  SampleApi api;
+//  _Chats(){
+//    api=new SampleApi<String>();
+//  }
+
   @override
   Widget build(BuildContext context) {
     if(_result==null){
@@ -242,13 +374,96 @@ class _Chats extends State<Chats>{
             ),
           ],
         ),
-        body: _showchats()
+//        body: _showchats()
+        body: new Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
+          children:<Widget>[
+            new TextField(
+              onChanged: updateList,
+            ),
+
+            Expanded(
+            child: _showchats(),
+
+
+          ),
+
+          ]
+        )
+        );
+  }
+
+  void updateList(String query){
+    _suggestions1.removeWhere((item) => item.first.length>=0);
+    _suggestions1uid.removeWhere((item) => item.first.length>=0);
+
+    for(int i=0; i<_suggestions.length; i++){
+      if(_suggestions[i].first.contains(query)){
+//        String a = _
+        _suggestions1.add(new WordPair(
+            _suggestionsname[i].first, _suggestionsname[i].second)
+        );
+        _suggestions1uid.add(new WordPair(
+            _suggestions[i].first, _suggestions[i].second)
+        );
+
+      }
+      else if(_suggestionsname[i].first.contains(query)){
+//        String a = _
+        _suggestions1.add(new WordPair(
+            _suggestionsname[i].first, _suggestionsname[i].second)
+        );
+        _suggestions1uid.add(new WordPair(
+            _suggestions[i].first, _suggestions[i].second)
+        );
+      }
+    }
+    setState(() {
+      _result = _result+1;
+    });
+  }
+
+  Widget _searchbox(){
+    return Padding(
+      padding: EdgeInsets.all(0.0),
+      child: Column(
+        children: <Widget>[
+          SizedBox(height: 3.0,),
+          TypeAheadField(
+            textFieldConfiguration: TextFieldConfiguration(
+                autofocus: true,
+                style: DefaultTextStyle.of(context).style.copyWith(
+                    fontStyle: FontStyle.italic
+                ),
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "search here"
+                )
+            ),
+            suggestionsCallback: (pattern) async {
+              return await BackendService.getSuggestions(pattern);
+            },
+            itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion['name']),
+              );
+            },
+            onSuggestionSelected: (suggestion) {
+//              Navigator.of(context).push(MaterialPageRoute(
+//                  builder: (context) => ProductPage(product: suggestion)
+//              ));
+            },
+          )
+        ],
+      ),
     );
   }
-  Widget _buildRow(WordPair pair) {
+
+  Widget _buildRow(WordPair pair1, WordPair pair2) {
     return new ListTile(
       title: new Text(
-        pair.asPascalCase,
+        pair1.asPascalCase+' '+pair2.first,
         style: _biggerFont,
 
       ),
@@ -256,7 +471,7 @@ class _Chats extends State<Chats>{
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Conversation(uid: pair.first),
+            builder: (context) => Conversation(uid: pair2.first),
           ),
         );
       },
@@ -270,11 +485,9 @@ class _Chats extends State<Chats>{
     );
   }
 
-
-
   Widget _showchats(){
     return new ListView.builder(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(0.0),
       // The itemBuilder callback is called once per suggested
       // word pairing, and places each suggestion into a ListTile
       // row. For even rows, the function adds a ListTile row for
@@ -296,12 +509,15 @@ class _Chats extends State<Chats>{
         final int index = i ~/ 2;
         // If you've reached the end of the available word
         // pairings...
-        print(_suggestions.length);
-        return _buildRow(_suggestions[index]);
+        print(_suggestions1.length);
+        return _buildRow(_suggestions1[index], _suggestions1uid[index]);
       },
-      itemCount: 2*_suggestions.length,
+      itemCount: 2*_suggestions1.length,
     );
   }
+
+
+
 }
 
 
@@ -329,7 +545,7 @@ class _Conversation extends State<Conversation>{
   void initState(){
     super.initState();
     Session loginsession = new Session();
-    loginsession.post('http://192.168.2.7:8080/lab6/ConversationDetail',
+    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/ConversationDetail',
         {'id': _username, 'other_id' : widget.uid}).then((sa) {
       Map status = jsonDecode(sa);
       print(sa);
@@ -439,7 +655,7 @@ class _Conversation extends State<Conversation>{
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.7:8080/lab6/NewMessage',
+    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/NewMessage',
         {'id': _username, 'other_id': widget.uid, 'msg': _text1})
         .then((sa) {
       Map status = jsonDecode(sa);
@@ -479,16 +695,16 @@ class _Conversation extends State<Conversation>{
 //            onSaved: (value){_username=value;},
 //          ),
           new Flexible(
-          child: TextFormField(
-            decoration: const InputDecoration(hintText: 'new messsage'),
+            child: TextFormField(
+              decoration: const InputDecoration(hintText: 'new messsage'),
 //            obscureText: true,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter non empty text';
-              }
-            },
-            onSaved:(value) { _text1=value;},
-          ),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter non empty text';
+                }
+              },
+              onSaved:(value) { _text1=value;},
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6.0),
