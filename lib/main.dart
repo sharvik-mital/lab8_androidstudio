@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'session.dart';
-//import 'type_ahead.dart';
-//import 'search.dart';
-//import 'service_result.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
-
 //import 'package:json_serializable/builder.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+
 //import 'package:flutter/material.dart';
 void main() => runApp(new MyApp());
 
@@ -57,21 +54,25 @@ class MyCustomFormState extends State<MyCustomForm> {
   //
   // Note: This is a GlobalKey<FormState>, not a GlobalKey<MyCustomFormState>!
   final _formKey = GlobalKey<FormState>();
-
+  BuildContext scaffoldContext;
   @override
   Widget build(BuildContext context) {
-    if (loginresult == null) {
+     {
       return new Scaffold(
         appBar: new AppBar(
           title: new Text('Login Page'),
         ),
-        body: _loginform1(),
+        body: new Builder(builder:(BuildContext _context){
+          scaffoldContext= _context;
+          return _loginform1();
+        } )
+
       );
     }
 //     Navigator.push(context,
 //        MaterialPageRoute(builder: (context) => Chats()));
 
-  }
+}
 //  void initState(){
 //    super.initState();
 //    print('2');
@@ -95,22 +96,23 @@ class MyCustomFormState extends State<MyCustomForm> {
     }
   }
   void _performLogin() {
+
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
+    loginsession.post('http://192.168.2.7:8080/lab6/LoginServlet', {'userid': _username, 'password': _password}).then((sa) {
       Map status = jsonDecode(sa);
-
+      print(sa);
       if(status['status'].toString()=='true'){
 //        setState(() {
 //          loginresult=1;
 //        });
         Navigator.of(context).pushReplacementNamed('./chats');
       }
-//          else{
-//            Scaffold.of(context)
-//                .showSnackBar(SnackBar(content: Text('Invalid Credentails')));
-//          }
+          else{
+            Scaffold.of(scaffoldContext)
+                .showSnackBar(SnackBar(content: Text('Invalid Credentails')));
+          }
 //            StatefulWidget
 
 //  JSONObject reader = new JSONObject(sa);
@@ -155,110 +157,6 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
 }
-
-//class SampleApi<T> extends SearchApi
-//{
-//
-//  List<String> _names =  [
-//    '',
-//  ];
-//  List<String> _uuuid = [
-//    '',
-//  ];
-//
-//  @override
-//  Future<ServiceResult<Iterable<String>>> exec<T>(String input) async {
-//
-//    await new Future.delayed(new Duration(seconds: 0)); //simulate a slow response
-//    Session loginSession = new Session();
-//    loginSession.post('http://192.168.1.102:8080/lab8_androidstudio/AutoCompleteUser', {'id':_username, 'term':input}).then((sa){
-//      print(sa);
-//      _names.removeWhere((item) => item.length > 0);
-//
-//      if(sa!='[]') {
-//        print(input);
-//        sa = sa.replaceAll('},{', '} , {').replaceAll('[', '').replaceAll(
-//            ']', '').replaceAll('uid: ', '').replaceAll('name: ', '')
-//            .replaceAll('phone: ', '');
-////      print(sa);
-//        List<String> status;
-//        status = sa.split(" , ");
-//        print(status.length);
-//        if (status.length > 0) {
-//          for (int i = 0; i < status.length; i++) {
-//            print(status[i]);
-//            Map stat = json.decode(status[i]);
-////
-//            _names.add(stat['label']);
-//            _uuuid.add(stat['value']);
-//          }
-//        }
-//      }
-//    });
-//    var results = _names.where((x) => x.toLowerCase().contains(input.trim().toLowerCase())).toList();
-//    final ServiceResult<Iterable<String>> sr = new ServiceResult<Iterable<String>>();
-//    sr.model = results;
-////    sr.val = _uuuid;
-//    sr.ok = true;
-//    return new Future.value(sr);
-//    }
-//}
-
-class BackendService {
-
-  static getSuggestions(String query) async {
-    List<String> _names=[
-      '',
-    ];
-    List<String> _uuuid=[
-      '',
-    ];
-    var a=0;
-    Session loginSession = new Session();
-    loginSession.post('http://192.168.2.8:8080/lab8_androidstudio/AutoCompleteUser', {'id':_username, 'term':query}).then((sa){
-//      print(sa);
-      _names.removeWhere((item) => item.length > 0);
-
-      if(sa!='[]') {
-//        print(query);
-        sa = sa.replaceAll('},{', '} , {').replaceAll('[', '').replaceAll(
-            ']', '').replaceAll('uid: ', '').replaceAll('name: ', '')
-            .replaceAll('phone: ', '');
-//      print(sa);
-        List<String> status;
-        status = sa.split(" , ");
-//        print(status.length);
-        if (status.length > 0) {
-          for (int i = 0; i < status.length; i++) {
-//            print(status[i]);
-            Map stat = json.decode(status[i]);
-//
-            _names.add(stat['label']);
-            print(_names[i]);
-            _uuuid.add(stat['value']);
-          }
-        }
-      }
-      a=1;
-    });
-
-    await Future.delayed(Duration(seconds: 1));
-//    List<String> res=_names.toList();
-//    while(a!=1);
-//    print(a);
-//    print(_names[0]);
-//    print(_names.length);
-//    return _names.toList();
-    return List.generate(_names.length, (index) {
-      return {
-//        'name': query + index.toString(),
-//        'price': Random().nextInt(100)
-          'name': _names[index],
-          'uid' : _uuuid[index]
-      };
-    });
-  }
-}
 class Chats extends StatefulWidget {
   @override
   _Chats createState() {
@@ -276,60 +174,64 @@ class _Chats extends State<Chats>{
   void initState(){
     super.initState();
     Session loginsession = new Session();
-    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/AllConversations',
+    loginsession.post('http://192.168.2.7:8080/lab6/AllConversations',
         {'userid': _username}).then((sa) {
       Map status = jsonDecode(sa);
       print(sa);
+      if(status['status'].toString() =='false'){
+        if(status['message'].contains('logged')){
+          Navigator.of(context).pushNamedAndRemoveUntil('./login',
+                  (Route<dynamic> route) => false);
+          return;
+        }
+      }
+      else{
       for (int i = 0; i < status['data'].length; i++) {
         if(status['data'][i]['last_timestamp']==null){
           _suggestions.add(new WordPair(
-              status['data'][i]['uid'], "1"));
+              status['data'][i]['uid'], ' '));
           _suggestionsname.add(new WordPair(
-              status['data'][i]['name']+' ', "1"));
+              status['data'][i]['name']+' ', ' '));
           _suggestions1.add(new WordPair(
-              status['data'][i]['name']+' ', "1"));
+              status['data'][i]['name']+' ', ' '));
           _suggestions1uid.add(new WordPair(
-              status['data'][i]['uid'], "1"));
+              status['data'][i]['uid'], ' '));
         }
         else{
           _suggestions.add(new WordPair(
               status['data'][i]['uid'], status['data'][i]['last_timestamp']));
           _suggestionsname.add(new WordPair(
               status['data'][i]['name']+' ', status['data'][i]['last_timestamp']));
-
           _suggestions1.add(new WordPair(
               status['data'][i]['name']+' ', status['data'][i]['last_timestamp']));
-
           _suggestions1uid.add(new WordPair(
               status['data'][i]['uid'], status['data'][i]['last_timestamp']));
-
         }
 
       }
       setState(() {
-        if(_result==null) {
+        if (_result == null) {
           _result = 1;
         }
-        else
-        {
-          _result+=1;
+        else {
+          _result += 1;
         }
       });
+      }
 
     });
   }
   void logout(){
-    loginresult=null;
-    Navigator.of(context).pushNamedAndRemoveUntil('./login',
-            (Route<dynamic> route) => false);
-
+    Session loginsession = new Session();
+//  print(_username);
+//  print(_password);
+    loginsession.post('http://192.168.2.7:8080/lab6/LogoutServlet',
+        {})
+        .then((sa) {
+      Navigator.of(context).pushNamedAndRemoveUntil('./login',
+              (Route<dynamic> route) => false);
+    });
   }
-
-//  SampleApi api;
-//  _Chats(){
-//    api=new SampleApi<String>();
-//  }
-
   @override
   Widget build(BuildContext context) {
     if(_result==null){
@@ -340,7 +242,17 @@ class _Chats extends State<Chats>{
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () {
-                Chats();
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.create),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NewConversation(),
+                  ),
+                );
               },
             ),
             IconButton(
@@ -367,6 +279,18 @@ class _Chats extends State<Chats>{
               },
             ),
             IconButton(
+              icon: Icon(Icons.create),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NewConversation(),
+                  ),
+                );
+              },
+            ),
+
+            IconButton(
               icon: Icon(Icons.exit_to_app),
               onPressed: () {
                 logout();
@@ -374,30 +298,26 @@ class _Chats extends State<Chats>{
             ),
           ],
         ),
-//        body: _showchats()
         body: new Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
-          children:<Widget>[
-            new TextField(
-              onChanged: updateList,
-            ),
-
-            Expanded(
-            child: _showchats(),
-
-
-          ),
-
-          ]
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.max,
+            children:<Widget>[
+              new TextField(
+                  decoration: new InputDecoration(
+                    hintText: "search here",
+                  ),
+                onChanged: updateList,
+              ),
+              Expanded(
+                child: _showchats(),
+              ),
+            ]
         )
-        );
+    );
   }
-
   void updateList(String query){
     _suggestions1.removeWhere((item) => item.first.length>=0);
     _suggestions1uid.removeWhere((item) => item.first.length>=0);
-
     for(int i=0; i<_suggestions.length; i++){
       if(_suggestions[i].first.contains(query)){
 //        String a = _
@@ -407,7 +327,6 @@ class _Chats extends State<Chats>{
         _suggestions1uid.add(new WordPair(
             _suggestions[i].first, _suggestions[i].second)
         );
-
       }
       else if(_suggestionsname[i].first.contains(query)){
 //        String a = _
@@ -424,46 +343,10 @@ class _Chats extends State<Chats>{
     });
   }
 
-  Widget _searchbox(){
-    return Padding(
-      padding: EdgeInsets.all(0.0),
-      child: Column(
-        children: <Widget>[
-          SizedBox(height: 3.0,),
-          TypeAheadField(
-            textFieldConfiguration: TextFieldConfiguration(
-                autofocus: true,
-                style: DefaultTextStyle.of(context).style.copyWith(
-                    fontStyle: FontStyle.italic
-                ),
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "search here"
-                )
-            ),
-            suggestionsCallback: (pattern) async {
-              return await BackendService.getSuggestions(pattern);
-            },
-            itemBuilder: (context, suggestion) {
-              return ListTile(
-                title: Text(suggestion['name']),
-              );
-            },
-            onSuggestionSelected: (suggestion) {
-//              Navigator.of(context).push(MaterialPageRoute(
-//                  builder: (context) => ProductPage(product: suggestion)
-//              ));
-            },
-          )
-        ],
-      ),
-    );
-  }
-
   Widget _buildRow(WordPair pair1, WordPair pair2) {
     return new ListTile(
       title: new Text(
-        pair1.asPascalCase+' '+pair2.first,
+        pair1.asPascalCase,
         style: _biggerFont,
 
       ),
@@ -471,7 +354,7 @@ class _Chats extends State<Chats>{
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Conversation(uid: pair2.first),
+            builder: (context) => Conversation(uid: pair2.first,name:pair1.first),
           ),
         );
       },
@@ -485,9 +368,11 @@ class _Chats extends State<Chats>{
     );
   }
 
+
+
   Widget _showchats(){
     return new ListView.builder(
-      padding: EdgeInsets.all(0.0),
+      padding: const EdgeInsets.all(16.0),
       // The itemBuilder callback is called once per suggested
       // word pairing, and places each suggestion into a ListTile
       // row. For even rows, the function adds a ListTile row for
@@ -515,16 +400,14 @@ class _Chats extends State<Chats>{
       itemCount: 2*_suggestions1.length,
     );
   }
-
-
-
 }
 
 
 class Conversation extends StatefulWidget {
   final String uid;
+  final String name;
 
-  Conversation({Key key, this.uid}) : super(key: key);
+  Conversation({Key key, this.uid, this.name}) : super(key: key);
 
   @override
   _Conversation createState() {
@@ -537,18 +420,31 @@ class _Conversation extends State<Conversation>{
   var _result;
   String _text1;
   final _formKey1 = GlobalKey<FormState>();
-
+  String otherusername;
   final List<String> _text = <String>[];
   final List<String> _uuid = <String>[];
 //  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
 //
+  Future<bool> _onWillPop() {
+       Navigator.of(context).pushNamedAndRemoveUntil('./chats',
+                    (Route<dynamic> route) => false);
+       return new Future.value(false);
+  }
   void initState(){
     super.initState();
+
     Session loginsession = new Session();
-    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/ConversationDetail',
+    loginsession.post('http://192.168.2.7:8080/lab6/ConversationDetail',
         {'id': _username, 'other_id' : widget.uid}).then((sa) {
       Map status = jsonDecode(sa);
       print(sa);
+      if(status['status'].toString() =='false'){
+        if(status['message'].contains('logged')){
+          Navigator.of(context).pushNamedAndRemoveUntil('./login',
+                  (Route<dynamic> route) => false);
+          return ;
+        }
+      }
       for (int i = 0; i < status['data'].length; i++) {
 //        if(status['data'][i]['last_timestamp']==null){
         _text.add(status['data'][i]['text']);
@@ -556,6 +452,8 @@ class _Conversation extends State<Conversation>{
           _uuid.add('You');
         }
         else{
+
+          otherusername= status['data'][i]['name'];
           _uuid.add(status['data'][i]['name']);
         }
 //        }
@@ -576,73 +474,71 @@ class _Conversation extends State<Conversation>{
 
   @override
   Widget build(BuildContext context) {
-    if(_result==null){
-      return new Scaffold(
-        appBar: new AppBar(
-          title: new Text(widget.uid),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.exit_to_app),
-              onPressed: () {
-                loginresult=null;
-                Navigator.of(context).pushNamedAndRemoveUntil('./login',
-                        (Route<dynamic> route) => false);
-
-              },
-            ),
-          ],
-        ),
-        body: new Center(
+    Widget _body(){
+      if(_result==null) {
+        return new Center(
           child: new Text('Loading..'),
-        ),
-      );
-    }
-    return new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Chats'),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
+        );
+      }
+      return new Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
+          children:<Widget>[
+            Expanded(
+              child:_buildConversationDetail(),
 
-                Navigator.of(context).pop();
-              },
             ),
-            IconButton(
-              icon: Icon(Icons.exit_to_app),
-              onPressed: () {
-                loginresult=null;
-                Navigator.of(context).pushNamedAndRemoveUntil('./login',
-                        (Route<dynamic> route) => false);
-
-              },
-            ),
-          ],
-        ),
-        body: new Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.max,
-            children:<Widget>[
-              Expanded(
-                child:_buildConversationDetail(),
-
-              ),
 //          _buildConversationDetail(),
 
-              _sendmessage(),
-            ]
-        )
+            _sendmessage(),
+          ]
+      );
+      }
+//      Widget _title(){
+//        if(_result==null) {
+//          return new Text(widget.uid);
+//        }
+//        else{
+//          return new Text(widg);
+//        }
+//      }
+    return new WillPopScope(
+      onWillPop: _onWillPop,
+      child: new Scaffold(
+        appBar: new AppBar(
+          title: new Text(widget.name),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
 
+            IconButton(
+              icon: Icon(Icons.exit_to_app),
+              onPressed: () {
+                logout();
+
+              },
+            ),
+          ],
+        ),
+        body: _body(),
+    ),
     );
-
-  }
-
+    }
+  void logout(){
+    Session loginsession = new Session();
+//  print(_username);
+//  print(_password);
+    loginsession.post('http://192.168.2.7:8080/lab6/LogoutServlet',
+        {})
+        .then((sa) {
+      Navigator.of(context).pushNamedAndRemoveUntil('./login',
+            (Route<dynamic> route) => false);
+  });
+        }
   void _sendnewmessage() {
     final form = _formKey1.currentState;
     if (form.validate()) {
@@ -652,14 +548,25 @@ class _Conversation extends State<Conversation>{
     }
   }
   void _sendnewmessage1(){
+
     Session loginsession = new Session();
 //  print(_username);
 //  print(_password);
-    loginsession.post('http://192.168.2.8:8080/lab8_androidstudio/NewMessage',
+
+    loginsession.post('http://192.168.2.7:8080/lab6/NewMessage',
         {'id': _username, 'other_id': widget.uid, 'msg': _text1})
-        .then((sa) {
+        .then((sa)
+    {
       Map status = jsonDecode(sa);
       print(sa);
+      if(status['status'].toString() =='false'){
+        if(status['message'].contains('logged')){
+          Navigator.of(context).pushNamedAndRemoveUntil('./login',
+                  (Route<dynamic> route) => false);
+          return;
+        }
+      }
+
 //      if(status['status'].toString()=='true'){
 //        Navigator.push(context,
 //            MaterialPageRoute(builder: (context) => Chats()));
@@ -669,7 +576,7 @@ class _Conversation extends State<Conversation>{
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Conversation(uid: widget.uid),
+          builder: (context) => Conversation(uid: widget.uid, name: widget.name,),
         ),
       );
     });
@@ -695,16 +602,16 @@ class _Conversation extends State<Conversation>{
 //            onSaved: (value){_username=value;},
 //          ),
           new Flexible(
-            child: TextFormField(
-              decoration: const InputDecoration(hintText: 'new messsage'),
+          child: TextFormField(
+            decoration: const InputDecoration(hintText: 'new messsage'),
 //            obscureText: true,
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter non empty text';
-                }
-              },
-              onSaved:(value) { _text1=value;},
-            ),
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Please enter non empty text';
+              }
+            },
+            onSaved:(value) { _text1=value;},
+          ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6.0),
@@ -777,7 +684,181 @@ class _Conversation extends State<Conversation>{
 
 }
 
+class NewConversation extends StatefulWidget{
+@override
+_NewConversation createState()=> new _NewConversation();
+}
+class _NewConversation extends State<NewConversation>{
+  Widget build(BuildContext context){
+    return new Scaffold(
+      appBar : new AppBar(
+        title: new Text('New Conversatoin'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
 
+              Navigator.of(context).pop();
+            },
+          ),
+
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () {
+              logout();
+
+            },
+          ),
+        ],
+      ),
+        body: _searchbox(),
+
+
+    );
+  }
+  Widget _searchbox(){
+    return Padding(
+      padding: EdgeInsets.all(0.0),
+      child: Column(
+        children: <Widget>[
+          SizedBox(height: 1.0,),
+          TypeAheadField(
+            textFieldConfiguration: TextFieldConfiguration(
+                autofocus: true,
+//                style: DefaultTextStyle.of(context).style.copyWith(
+//                    fontStyle: FontStyle.italic
+//                ),
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "search here"
+                )
+            ),
+            suggestionsCallback: (pattern) async {
+              return await BackendService.getSuggestions(pattern);
+            },
+            itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion['name']),
+              );
+            },
+            onSuggestionSelected: (suggestion) {
+              print (suggestion['uid']);
+              List<String> w= suggestion['name'].split(',');
+              create(suggestion['uid'], w[1]);
+//              Navigator.of(context).push(MaterialPageRoute(
+//                  builder: (context) => ProductPage(product: suggestion)
+//              ));
+            },
+          )
+        ],
+      ),
+    );
+  }
+  void logout() {
+    Session loginsession = new Session();
+//  print(_username);
+//  print(_password);
+    loginsession.post('http://192.168.2.7:8080/lab6/LogoutServlet',
+        {})
+        .then((sa) {
+      Navigator.of(context).pushNamedAndRemoveUntil('./login',
+              (Route<dynamic> route) => false);
+    });
+  }
+    void create(String text, String usname){
+
+    Session loginsession = new Session();
+
+//  print(_username);
+//  print(_password);
+    loginsession.post('http://192.168.2.7:8080/lab6/CreateConversation',
+        {'id': _username, 'other_id': text})
+        .then((sa) {
+          print (sa);
+          Map status = jsonDecode(sa);
+          if(status['status'].toString() =='false'){
+            if(status['message'].contains('logged')){
+              Navigator.of(context).pushNamedAndRemoveUntil('./login',
+                      (Route<dynamic> route) => false);
+              return;
+            }
+          }
+          if(status['status'].toString()=='false'){
+            String message=status['message'].toString();
+            if(message.contains('duplicate key value')){
+              print('duplicate');
+            Navigator.pushReplacement(
+            context,(new MaterialPageRoute(
+       builder: (context) => Conversation(uid:text, name: usname)
+      )));
+
+
+        }
+      }
+      else{
+        Navigator.pushReplacement(
+        context,(new MaterialPageRoute(
+        builder: (context) => Conversation(uid:text, name: usname)
+        )));
+      }
+
+    });
+  }
+}
+
+class BackendService {
+  static getSuggestions(String query) async {
+    List<String> _names=[
+      '',
+    ];
+    List<String> _uuuid=[
+      '',
+    ];
+    var a=0;
+    Session loginSession = new Session();
+    loginSession.post('http://192.168.2.7:8080/lab6/AutoCompleteUser', {'id':_username, 'term':query}).then((sa){
+//      print(sa);
+      _names.removeWhere((item) => item.length >= 0);
+      _uuuid.removeWhere((item) => item.length >= 0);
+      if(sa!='[]') {
+//        print(query);
+        sa = sa.replaceAll('},{', '} , {').replaceAll('[', '').replaceAll(']', '').replaceAll(']', '').replaceAll('uid: ', '').replaceAll('name: ', '')
+            .replaceAll('phone: ', '');
+//      print(sa);
+        List<String> status;
+        status = sa.split(" , ");
+//        print(status.length);
+        if (status.length > 0) {
+          for (int i = 0; i < status.length; i++) {
+//            print(status[i]);
+            Map stat = json.decode(status[i]);
+//
+            _names.add(stat['label']);
+            print(_names[i]);
+            _uuuid.add(stat['value']);
+            print(_uuuid[i]);
+          }
+        }
+      }
+      a=1;
+    });
+    await Future.delayed(Duration(seconds: 1));
+//    List<String> res=_names.toList();
+//    while(a!=1);
+//    print(a);
+//    print(_names[0]);
+//    print(_names.length);
+//    return _names.toList();
+    return List.generate(_names.length, (index) {
+      return {
+//        'name': query + index.toString(),
+//        'price': Random().nextInt(100)
+        'name': _names[index],
+        'uid' : _uuuid[index]
+      };
+    });
+  }
+}
 class RandomWordsState extends State<RandomWords> {
   final List<WordPair> _suggestions=<WordPair>[];
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
