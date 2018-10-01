@@ -21,7 +21,7 @@ void main() => runApp(new MyApp());
 //  }
 //}
 String _username,_password;
-const String url='http://192.168.2.8:8080/lab8_androidstudio/';
+const String url='http://192.168.1.102:8080/lab8_androidstudio/';
 var loginresult;
 class MyApp extends StatelessWidget {
   @override
@@ -284,7 +284,8 @@ class _Chats extends State<Chats>{
               IconButton(
                 icon: Icon(Icons.home),
                 onPressed: () {
-                  Chats();
+                  Navigator.of(context).pushNamedAndRemoveUntil('./chats',
+                          (Route<dynamic> route) => false);
                 },
               ),
               IconButton(
@@ -521,7 +522,8 @@ class _Conversation extends State<Conversation>{
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pushNamedAndRemoveUntil('./chats',
+                        (Route<dynamic> route) => false);
               },
             ),
 
@@ -707,8 +709,8 @@ class _NewConversation extends State<NewConversation>{
           IconButton(
             icon: Icon(Icons.home),
             onPressed: () {
-
-              Navigator.of(context).pop();
+              Navigator.of(context).pushNamedAndRemoveUntil('./chats',
+                      (Route<dynamic> route) => false);
             },
           ),
 
